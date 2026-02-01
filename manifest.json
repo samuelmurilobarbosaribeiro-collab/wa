@@ -1,0 +1,16 @@
+{
+  "name": "WAR ROOM EPCAR",
+  "short_name": "WarRoom",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2807/2807869.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

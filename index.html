@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WAR ROOM: EPCAR ELITE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;800&display=swap');
+        body { background-color: #020617; color: #f8fafc; font-family: 'JetBrains Mono', monospace; }
+        .neo-card { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(12px); }
+        .accent-border { border-left: 4px solid #38bdf8; }
+        .btn-action { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-transform: uppercase; letter-spacing: 1px; }
+        .btn-action:active { transform: scale(0.96); opacity: 0.8; }
+        .listening-pulse { animation: pulse 1.5s infinite; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // BANCO DE DADOS EPCAR ELITE
+        const DB_QUESTOES = [
+            { mat: "MAT", p: "O ALGEBRISTA: Simplifique [(x²-y²)/(x+y)] / (x-y)", r: "1", expl: "Produtos notáveis: (x-y)(x+y) cancela tudo." },
+            { mat: "MAT", p: "F.M.E VOL 9: Área de um triângulo equilátero de lado 4?", r: "4√3", expl: "Fórmula: (l²√3)/4" },
+            { mat: "PORT", p: "Identifique a voz verbal: 'O cadete foi condecorado pelo oficial'.", r: "Voz Passiva Analítica", expl: "Sujeito sofre a ação." },
+            { mat: "ING", p: "Complete: 'If I ___ you, I would study more.'", r: "were", expl: "Second Conditional: Hypothetical situation." }
+        ];
+
+        const App = () => {
+            const [view, setView] = useState('DASHBOARD');
+            const [mode, setMode] = useState(null);
+            const [xp, setXp] = useState(0);
+            const diaSemana = new Date().getDay(); // 0: Dom, 6: Sab
+
+            // VIEWS COMPONENTIZADAS
+            const Dashboard = () => (
+                <div className="min-h-screen pb-10">
+                    <header className="p-6 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#020617]/80 backdrop-blur-md z-50">
+                        <div>
+                            <h1 className="text-xl font-800 italic tracking-tighter text-sky-400">WAR ROOM <span className="text-white text-xs not-italic font-normal opacity-50">V2.6</span></h1>
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Ad Astra Per Aspera</p>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-lg font-800 text-white">{xp}</div>
+                            <div className="text-[8px] text-sky-500 font-black">RANK: CADETE</div>
+                        </div>
+                    </header>
+
+                    <main className="p-4 space-y-6">
+                        {/* SEGUNDA A SEXTA */}
+                        {diaSemana >= 1 && diaSemana <= 5 && (
+                            <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <h2 className="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-[3px]">Missões Diárias (30Q)</h2>
+                                <div className="grid gap-3">
+                                    {['MATEMÁTICA', 'PORTUGUÊS', 'INGLÊS'].map((m, i) => (
+                                        <button key={m} onClick={() => {setMode(m.slice(0,3)); setView('QUIZ')}} className="neo-card p-5 rounded-xl flex justify-between items-center group active:border-sky-500">
+                                            <div>
+                                                <div className="text-xs font-black text-sky-400 opacity-70">MISSÃO 0{i+1}</div>
+                                                <div className="text-sm font-800">{m}</div>
+                                            </div>
+                                            <div className="bg-sky-500/10 text-sky-500 text-[10px] px-3 py-1 rounded-full border border-sky-500/20">10 QUESTÕES</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* SABADO: SIMULADO FORTISSIMO */}
+                        {diaSemana === 6 && (
+                            <section className="animate-bounce-short">
+                                <div className="neo-card border-yellow-500/50 p-6 rounded-2xl text-center bg-yellow-500/5">
+                                    <h2 className="text-yellow-500 font-800 text-xl mb-1 uppercase">Simulado Global</h2>
+                                    <p className="text-[10px] text-yellow-200/50 mb-6 uppercase tracking-widest">48 Questões | Padrão EPCAr</p>
+                                    <button onClick={() => {setMode('SIMULADO'); setView('QUIZ')}} className="w-full bg-yellow-500 text-black font-800 py-4 rounded-lg btn-action">Iniciar Combate</button>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* DOMINGO: REDACAO E PSICO */}
+                        {diaSemana === 0 && (
+                            <section className="grid grid-cols-2 gap-4">
+                                <button onClick={() => setView('REDACAO')} className="neo-card p-6 rounded-2xl border-pink-500/30 text-center flex flex-col items-center gap-3">
+                                    <div className="p-3 bg-pink-500/10 rounded-full text-pink-500">✍️</div>
+                                    <span className="text-xs font-black">REDAÇÃO</span>
+                                </button>
+                                <button onClick={() => setView('PSICO')} className="neo-card p-6 rounded-2xl border-cyan-500/30 text-center flex flex-col items-center gap-3">
+                                    <div className="p-3 bg-cyan-500/10 rounded-full text-cyan-500">🧠</div>
+                                    <span className="text-xs font-black">PSICO</span>
+                                </button>
+                            </section>
+                        )}
+
+                        {/* BIBLIOTECA E CURSOS */}
+                        <section className="pt-6 border-t border-white/5">
+                            <h2 className="text-[10px] font-black text-slate-500 mb-4 uppercase tracking-[3px]">Suporte Logístico</h2>
+                            <div className="space-y-2">
+                                <a href="https://www.youtube.com/playlist?list=PLTPg64KdGgYhYpS5nXdFgdqEZDOS5lARB" target="_blank" className="flex items-center gap-4 p-3 bg-white/5 rounded-lg text-[10px] font-bold">
+                                    <span className="text-red-500 text-lg">▶</span> O ALGEBRISTA - CURSO COMPLETO
+                                </a>
+                                <a href="https://www.youtube.com/playlist?list=PLY90-k8RnA5oJy2-J0V-cHOBNg9ywpJBO" target="_blank" className="flex items-center gap-4 p-3 bg-white/5 rounded-lg text-[10px] font-bold">
+                                    <span className="text-red-500 text-lg">▶</span> F.M.E. VOL 9 - GEOMETRIA PLANA
+                                </a>
+                            </div>
+                        </section>
+                    </main>
+                </div>
+            );
+
+            const QuizView = () => {
+                const [idx, setIdx] = useState(0);
+                const [revealed, setRevealed] = useState(false);
+                const questoes = mode === 'SIMULADO' ? [...DB_QUESTOES, ...DB_QUESTOES] : DB_QUESTOES.slice(0, 10);
+                const q = questoes[idx % questoes.length];
+
+                return (
+                    <div className="min-h-screen p-6 flex flex-col justify-center animate-in fade-in">
+                        <div className="mb-8">
+                            <div className="flex justify-between text-[10px] font-black text-sky-500 uppercase mb-2">
+                                <span>{mode} Mode</span>
+                                <span>{idx + 1} / {questoes.length}</span>
+                            </div>
+                            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full bg-sky-500 transition-all duration-500" style={{width: `${((idx+1)/questoes.length)*100}%`}}></div>
+                            </div>
+                        </div>
+
+                        <div className="neo-card p-8 rounded-3xl accent-border mb-8">
+                            <h3 className="text-lg font-bold leading-relaxed">{q.p}</h3>
+                        </div>
+
+                        {revealed ? (
+                            <div className="space-y-4 animate-in zoom-in-95">
+                                <div className="p-6 bg-green-500/10 border border-green-500/30 rounded-2xl">
+                                    <div className="text-green-500 font-black text-xs mb-1 uppercase">Gabarito Oficial:</div>
+                                    <div className="text-xl font-800 mb-2">{q.r}</div>
+                                    <p className="text-xs text-slate-400 italic">{q.expl}</p>
+                                </div>
+                                <button onClick={() => {setRevealed(false); setIdx(idx+1); setXp(xp+10)}} className="w-full bg-white text-black font-800 py-4 rounded-xl btn-action text-sm">Próxima Questão</button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setRevealed(true)} className="w-full bg-sky-500 text-black font-800 py-4 rounded-xl btn-action text-sm">Verificar Resposta</button>
+                        )}
+                        <button onClick={() => setView('DASHBOARD')} className="mt-8 text-slate-500 text-[10px] font-black uppercase tracking-widest text-center">Abortar Missão</button>
+                    </div>
+                );
+            };
+
+            const RedacaoView = () => {
+                const [step, setStep] = useState(1);
+                return (
+                    <div className="min-h-screen p-6 flex flex-col">
+                        <header className="mb-6 flex justify-between items-center">
+                            <button onClick={() => setView('DASHBOARD')} className="text-slate-500 font-black text-xs uppercase tracking-tighter">← Sair</button>
+                            <span className="text-pink-500 font-black text-[10px] tracking-widest uppercase">Avaliação de Texto</span>
+                        </header>
+
+                        {step === 1 ? (
+                            <div className="flex-1 flex flex-col space-y-4">
+                                <div className="neo-card p-5 rounded-2xl">
+                                    <h4 className="text-[10px] text-pink-500 font-black mb-1">PROPOSTA DO DIA:</h4>
+                                    <p className="text-sm font-bold">"O papel da EPCAR na soberania do espaço aéreo brasileiro."</p>
+                                </div>
+                                <textarea className="flex-1 bg-slate-900/50 border border-white/5 rounded-2xl p-5 text-sm focus:border-pink-500/50 outline-none leading-relaxed" placeholder="Inicie sua redação aqui..."></textarea>
+                                <button onClick={() => setStep(2)} className="bg-pink-600 py-4 rounded-xl font-800 btn-action text-sm shadow-lg shadow-pink-600/20">Enviar para Banca</button>
+                            </div>
+                        ) : (
+                            <div className="space-y-6 animate-in slide-in-from-right">
+                                <h3 className="text-sm font-black uppercase text-center">Checklist de Correção</h3>
+                                {[
+                                    {t: "Estrutura (0-5)", d: "Introdução, Desenv. e Conclusão ok?"},
+                                    {t: "Gramática (0-5)", d: "Crase, Concordância e Ortografia?"},
+                                    {t: "Coesão (0-5)", d: "Uso de conectivos entre parágrafos?"}
+                                ].map(c => (
+                                    <div key={c.t} className="neo-card p-4 rounded-xl">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-xs font-bold">{c.t}</span>
+                                            <span className="text-pink-500 text-xs font-black">Nota: 5</span>
+                                        </div>
+                                        <input type="range" className="w-full accent-pink-500 opacity-50" />
+                                        <p className="text-[8px] text-slate-500 mt-2 uppercase">{c.d}</p>
+                                    </div>
+                                ))}
+                                <button onClick={() => {setXp(xp+100); setView('DASHBOARD')}} className="w-full bg-white text-black font-800 py-4 rounded-xl btn-action text-sm">Finalizar Nota Final</button>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const PsicoView = () => {
+                const [listening, setListening] = useState(false);
+                return (
+                    <div className="min-h-screen p-6 flex flex-col items-center justify-center text-center">
+                        <h2 className="text-cyan-500 font-black text-xs uppercase tracking-widest mb-10">Laboratório Psicotécnico</h2>
+                        <div className="neo-card p-8 rounded-3xl mb-12 w-full">
+                            <p className="text-lg font-bold">"Como você lidaria com uma situação de pressão extrema onde sua liderança fosse questionada?"</p>
+                        </div>
+                        <button onClick={() => setListening(!listening)} className={`p-10 rounded-full transition-all ${listening ? 'listening-pulse' : 'bg-white/5 border border-white/10'}`}>
+                            {listening ? '🛑' : '🎤'}
+                        </button>
+                        <p className="mt-6 text-[10px] text-slate-500 font-black uppercase tracking-widest">{listening ? 'Gravando resposta...' : 'Toque para falar'}</p>
+                        {listening && <button onClick={() => {setXp(xp+50); setView('DASHBOARD')}} className="mt-10 text-cyan-500 font-black text-xs underline underline-offset-8">ENVIAR RESPOSTA</button>}
+                        <button onClick={() => setView('DASHBOARD')} className="fixed top-8 left-6 text-slate-600 font-black">X</button>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="max-w-md mx-auto min-h-screen border-x border-white/5 shadow-2xl shadow-black">
+                    {view === 'DASHBOARD' && <Dashboard />}
+                    {view === 'QUIZ' && <QuizView />}
+                    {view === 'REDACAO' && <RedacaoView />}
+                    {view === 'PSICO' && <PsicoView />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
